@@ -96,7 +96,7 @@ SHELL_TOOLS = [
                 "properties": {
                     "cmd": {
                         "type": "string",
-                        "description": "The shell command to run (e.g. 'ls -la src/', 'grep -r TODO .')"
+                        "description": "The shell command to run (e.g. 'ls -la agent/', 'grep -r TODO .')"
                     }
                 },
                 "required": ["cmd"]

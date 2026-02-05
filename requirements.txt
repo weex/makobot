@@ -1,3 +1,5 @@
+dotenv
+litellm
 openai>=1.0.0
 pytest
 pytest-cov

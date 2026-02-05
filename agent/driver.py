@@ -6,14 +6,20 @@ Runs the conversation loop, dispatches tools, manages memory, and enforces workf
 
 import os
 import json
+import sys
 import time
+import warnings
 from datetime import datetime, timezone
 from pathlib import Path
-from openai import OpenAI
+#from openai import OpenAI
+from litellm import completion
 
 from agent.config import MODEL, TEMPERATURE, ENABLE_AUTOMERGE, ENDPOINT_URL, BEARER_TOKEN
 from agent.prompts import SYSTEM_PROMPT
 from agent.tools import ALL_TOOLS, execute_tool
+
+#TODO: Fix object formats
+warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 
 # ─── Constants & Paths ─────────────────────────────────────────────────────
 REPO_ROOT = Path.home() / "makobot"
@@ -27,11 +33,6 @@ LLM_LOG = MEMORY_DIR / "llm-calls.log.jsonl"
 
 # Ensure directories exist
 MEMORY_DIR.mkdir(exist_ok=True)
-
-client = OpenAI(
-    base_url=ENDPOINT_URL.rstrip("/chat/completions"),  # e.g. https://<ip>:8080/v1
-    api_key=BEARER_TOKEN,                               # or "sk-no-key-required" if Droplet doesn't enforce
-)
 
 # ─── Goal Memory Helpers (stub – expand later) ─────────────────────────────
 def load_goals():
@@ -86,7 +87,7 @@ def main():
             if user_input.lower() in ("quit", "exit", "q"):
                 print("Shutting down agent.")
                 save_goals(goal_memory)
-                break
+                sys.exit()
             if not user_input:
                 continue
 
@@ -101,25 +102,20 @@ def main():
                 start_time = time.time()
                 call_time = datetime.now(timezone.utc).isoformat()
 
-                response = client.chat.completions.create(
-                    model=MODEL,
+                os.environ['GRADIENT_AI_API_KEY'] = BEARER_TOKEN
+                response = completion(
+                    model="gradient_ai/" + MODEL,  # or custom provider
                     messages=messages,
                     tools=ALL_TOOLS,
                     tool_choice="auto",
                     temperature=TEMPERATURE,
-                    max_tokens=4096,  # adjust based on model
-                    # stream=False     # or True for streaming if you want
+                    drop_params=True,           # ← tells litellm to be more lenient
                 )
 
-                # Extract the assistant message (OpenAI format)
-                msg_content = response.choices[0].message.content
+                msg = {}
+
+                # proper tool calls
                 tool_calls = response.choices[0].message.tool_calls
-
-                msg = {
-                    "role": "assistant",
-                    "content": msg_content,
-                }
-
                 if tool_calls:
                     msg["tool_calls"] = [
                         {
@@ -131,6 +127,24 @@ def main():
                             }
                         } for tc in tool_calls
                     ]
+
+                # manually parsing tool calls from content
+                msg = response.choices[0].message  
+                if not hasattr(msg, "tool_calls") or not msg.tool_calls:
+                    content = msg.content or ""
+                    if content.strip().startswith("{") and "tool_calls" in content:
+                        try:
+                            parsed = json.loads(content)
+                            if "tool_calls" in parsed:
+
+                                for tc in parsed["tool_calls"]:
+                                    tc["tool_call_id"] = tc["id"]
+
+                                # Manually inject into message for downstream code
+                                msg.tool_calls = parsed["tool_calls"]
+                                print("Manually parsed tool_calls from content")
+                        except json.JSONDecodeError:
+                            pass
                 
                 duration = time.time() - start_time
                 log_entry = {
@@ -156,11 +170,12 @@ def main():
 
                 messages.append(msg)
 
-                if "tool_calls" not in msg or not msg["tool_calls"]:
-                    print("\n" + msg["content"])
+                if not msg["tool_calls"]:
+                    print("(Done) Response: \n" + msg["content"])
                     break
-
+                
                 for tool_call in msg["tool_calls"]:
+                    tool_call_id = tool_call["id"]
                     func_name = tool_call["function"]["name"]
                     args = json.loads(tool_call["function"].get("arguments", "{}"))
 
@@ -186,6 +201,7 @@ def main():
 
                     messages.append({
                         "role": "tool",
+                        "tool_call_id": tool_call_id,
                         "name": func_name,
                         "content": result
                     })
