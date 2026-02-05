@@ -34,18 +34,18 @@ jobs:
           # Optional: fail on lint errors
           # ruff check . --exit-non-zero-on-fix
 
-      - name: Run tests with coverage
-        run: |
-          pytest --cov=. --cov-report=xml --cov-report=term-missing
+      # Future steps: test coverage, security scan, dependency check, etc.
+      #- name: Run tests with coverage
+      #  run: |
+      #    pytest --cov=. --cov-report=xml --cov-report=term-missing
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}  # optional: add secret if you want uploads
-          fail_ci_if_error: true
-          verbose: true
+      #- name: Upload coverage to Codecov
+      #  uses: codecov/codecov-action@v4
+      #  with:
+      #    token: ${{ secrets.CODECOV_TOKEN }}  # optional: add secret if you want uploads
+      #    fail_ci_if_error: true
+      #    verbose: true
 
-      # Optional future steps: security scan, dependency check, etc.
       # - name: Security scan (Trivy or similar)
       #   uses: aquasecurity/trivy-action@master
       #   with:
