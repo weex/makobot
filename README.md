@@ -27,7 +27,7 @@ A self-hosted, fully local, controllable AI agent that lives inside its own Git 
 - **Safety & control**: Human confirmation only on PR creation (optional removal later). All ops confined to monorepo dir. `CONFIRM_WRITES` no longer needed in branches (GitHub protection suffices).
 
 **Current Folder Structure Snapshot**
-
+```
 .
 ├── memory/
 │   ├── goals.json
@@ -40,7 +40,7 @@ A self-hosted, fully local, controllable AI agent that lives inside its own Git 
 ├── .github/workflows/ci.yml
 ├── performance.log           # timing data
 └── run-agent.sh              # optional supervisor wrapper
-
+```
 
 **Still Open / Future Levers**
 - Exact confirmation removal timing
