@@ -142,12 +142,12 @@ def main():
                     "output_tokens": response.usage.completion_tokens if hasattr(response.usage, 'completion_tokens') else None,
                     "temperature": TEMPERATURE,
                     "duration_sec": round(duration, 3),
-                    "tool_calls": len(msg.get("tool_calls", [])),
+                    "tool_calls": msg.get("tool_calls", []),
                     "success": True,
                     "error": None,
                     "goal_id": goal_memory.get("current_focus"),
-                    "user_prompt_snippet": messages[-1]["content"][:120] + "..." if messages else "",
-                    "response_snippet": msg["content"][:120] + "..." if "content" in msg else ""
+                    "user_prompt": messages[-1]["content"] if messages else "",
+                    "response": msg["content"] if "content" in msg else ""
                 }
 
                 with open(LLM_LOG, "a", encoding="utf-8") as f:
