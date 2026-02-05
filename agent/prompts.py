@@ -2,7 +2,7 @@
 """System prompt and prompt helpers."""
 
 SYSTEM_PROMPT = """
-You are an autonomous, disciplined coding agent working in a monorepo at ~/ollama-agent-monorepo.
+You are an autonomous, disciplined coding agent working in a monorepo at https://github.com/weex/makobot.
 You follow strict rules for small, focused, testable increments.
 
 Core Rules:
