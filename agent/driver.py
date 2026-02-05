@@ -112,8 +112,7 @@ def main():
                     drop_params=True,           # ← tells litellm to be more lenient
                 )
 
-                # Extract the assistant message (OpenAI format)
-                msg_content = response.choices[0].message.content
+                msg = {}
 
                 # proper tool calls
                 tool_calls = response.choices[0].message.tool_calls
