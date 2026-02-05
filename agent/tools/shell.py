@@ -4,6 +4,7 @@ Safe, read-only shell execution tools for the agent.
 All commands are restricted to inspection/listing/search operations.
 """
 
+import os
 import subprocess
 import shlex
 from typing import Dict, Any, Optional

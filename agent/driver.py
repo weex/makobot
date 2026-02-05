@@ -5,14 +5,13 @@ Runs the conversation loop, dispatches tools, manages memory, and enforces workf
 """
 
 import os
-import sys
 import json
 import time
 from datetime import datetime
 from pathlib import Path
 from openai import OpenAI
 
-from agent.config import MODEL, TEMPERATURE, ENABLE_AUTOMERGE, CONFIRM_PR_CREATION, ENDPOINT_URL, BEARER_TOKEN
+from agent.config import MODEL, TEMPERATURE, ENABLE_AUTOMERGE, ENDPOINT_URL, BEARER_TOKEN
 from agent.prompts import SYSTEM_PROMPT
 from agent.tools import ALL_TOOLS, execute_tool
 
@@ -111,8 +110,28 @@ def main():
                     # stream=False     # or True for streaming if you want
                 )
 
-                duration = time.time() - start_time
+                # Extract the assistant message (OpenAI format)
+                msg_content = response.choices[0].message.content
+                tool_calls = response.choices[0].message.tool_calls
 
+                msg = {
+                    "role": "assistant",
+                    "content": msg_content,
+                }
+
+                if tool_calls:
+                    msg["tool_calls"] = [
+                        {
+                            "id": tc.id,
+                            "type": "function",
+                            "function": {
+                                "name": tc.function.name,
+                                "arguments": tc.function.arguments
+                            }
+                        } for tc in tool_calls
+                    ]
+                
+                duration = time.time() - start_time
                 log_entry = {
                     "timestamp": call_time,
                     "turn_id": turn_count,
@@ -133,29 +152,6 @@ def main():
 
                 with open(LLM_LOG, "a", encoding="utf-8") as f:
                     f.write(json.dumps(log_entry) + "\n")
-
-
-
-
-                # Extract the assistant message (OpenAI format)
-                msg_content = response.choices[0].message.content
-                tool_calls = response.choices[0].message.tool_calls
-
-                msg = {
-                    "role": "assistant",
-                    "content": msg_content,
-                }
-                if tool_calls:
-                    msg["tool_calls"] = [
-                        {
-                            "id": tc.id,
-                            "type": "function",
-                            "function": {
-                                "name": tc.function.name,
-                                "arguments": tc.function.arguments
-                            }
-                        } for tc in tool_calls
-                    ]
 
                 messages.append(msg)
 
