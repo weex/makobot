@@ -7,7 +7,7 @@ Runs the conversation loop, dispatches tools, manages memory, and enforces workf
 import os
 import json
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from openai import OpenAI
 
@@ -99,7 +99,7 @@ def main():
                 #     summarize_and_restart_context(messages)
 
                 start_time = time.time()
-                call_time = datetime.utcnow().isoformat() + "Z"
+                call_time = datetime.now(timezone.utc).isoformat()
 
                 response = client.chat.completions.create(
                     model=MODEL,
