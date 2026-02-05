@@ -1,0 +1,26 @@
+{
+  "goals": [
+    {
+      "id": 0,
+      "description": "Continuously monitor and resolve valid repo issues (lint errors, test failures, security findings, open bugs labeled 'bug'/'security'/'valid', Dependabot alerts)",
+      "status": "active",
+      "priority": "high",
+      "subtasks": [
+        "Run periodic lint checks (ruff/flake8)",
+        "Monitor recent CI failures via gh run list",
+        "Scan open issues with relevant labels",
+        "Address high-severity security alerts first",
+        "Propose small fix PRs for each detected issue"
+      ],
+      "notes": [
+        "This is the standing maintenance goal. It should be checked at session start and after major merges."
+      ],
+      "linked_pr": null,
+      "linked_branch": null,
+      "created": "2026-02-04T15:45:00Z",
+      "last_updated": "2026-02-04T15:45:00Z"
+    }
+  ],
+  "completed": [],
+  "current_focus": 0
+}
