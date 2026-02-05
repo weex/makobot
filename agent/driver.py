@@ -105,6 +105,7 @@ def main():
                     model=MODEL,
                     messages=messages,
                     tools=ALL_TOOLS,
+                    tool_choice="auto",
                     temperature=TEMPERATURE,
                     max_tokens=4096,  # adjust based on model
                     # stream=False     # or True for streaming if you want
